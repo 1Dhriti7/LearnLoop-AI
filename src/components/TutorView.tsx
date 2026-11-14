@@ -6,6 +6,7 @@ import {
   Send,
 } from "lucide-react";
 import { ProseMarkdown } from "./ProseMarkdown";
+import { generateTutorReply } from "../services/geminiClient";
 import type {
   NavigationPrefill,
   TutorMessage,
@@ -95,31 +96,20 @@ export const TutorView: React.FC<TutorViewProps> = ({
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/tutor/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: nextHistory.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-          subject,
-          topic,
-          style,
-        }),
+      const reply = await generateTutorReply({
+        messages: nextHistory.map((m) => ({
+          role: m.role,
+          content: m.content,
+        })),
+        subject,
+        topic,
+        style,
       });
-
-      const data = (await response.json()) as { reply?: string; error?: string };
-      if (!response.ok || !data.reply) {
-        throw new Error(
-          data.error || "Unable to reach the AI Tutor right now. Please try again."
-        );
-      }
 
       const assistantMsg: TutorMessage = {
         id: `assistant-${Date.now()}`,
         role: "assistant",
-        content: data.reply,
+        content: reply,
         timestamp: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",

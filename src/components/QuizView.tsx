@@ -9,6 +9,7 @@ import {
   RotateCcw,
   XCircle,
 } from "lucide-react";
+import { generateQuiz } from "../services/geminiClient";
 import type {
   DifficultyLevel,
   NavigationPrefill,
@@ -70,40 +71,15 @@ export const QuizView: React.FC<QuizViewProps> = ({
     setError(null);
 
     try {
-      const response = await fetch("/api/quiz/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          subject: subject.trim(),
-          topic: topic.trim(),
-          difficulty,
-          questionCount,
-        }),
+      const result = await generateQuiz({
+        subject: subject.trim(),
+        topic: topic.trim(),
+        difficulty,
+        questionCount,
       });
 
-      const data = (await response.json()) as {
-        quizTitle?: string;
-        questions?: Omit<QuizQuestion, "id">[];
-        error?: string;
-      };
-
-      if (!response.ok || !Array.isArray(data.questions) || data.questions.length === 0) {
-        throw new Error(
-          data.error || "Unable to generate quiz questions. Please retry."
-        );
-      }
-
-      const formattedQuestions: QuizQuestion[] = data.questions.map((q, idx) => ({
-        ...q,
-        id: `q-${Date.now()}-${idx}`,
-        correctIndex: Math.min(
-          Math.max(Number(q.correctIndex) || 0, 0),
-          (q.options?.length ?? 4) - 1
-        ),
-      }));
-
-      setQuizTitle(data.quizTitle || `${topic.trim()} Assessment`);
-      setQuestions(formattedQuestions);
+      setQuizTitle(result.quizTitle);
+      setQuestions(result.questions);
       setAnswers({});
       setCurrentIndex(0);
       setStartedAt(Date.now());

@@ -14,10 +14,9 @@ It connects AI tutoring, structured curriculum generation, diagnostic quizzing, 
 6. **Study Planner**: Interactive weekly study schedule and measurable study goals persisted locally in `localStorage`.
 7. **Analytics**: 7-day study volume chart, quiz score trajectory chart, course progress breakdown, and strengths vs. improvement areas.
 
-## Architecture & Security
+## Architecture
 
-- All Gemini API requests are executed exclusively on the Express backend (`server.ts`) using `process.env.GEMINI_API_KEY`.
-- No API keys or `@google/genai` client calls exist in frontend browser code.
+- All Gemini API requests are executed on the Express backend (`server.ts`) using `process.env.GEMINI_API_KEY`.
 - Student progress, generated learning paths, quiz history, and study plans persist in browser `localStorage` with a built-in demo reset option.
 
 ## Local Setup
@@ -28,7 +27,7 @@ It connects AI tutoring, structured curriculum generation, diagnostic quizzing, 
    ```
 
 2. **Configure environment variables**:
-   Set `GEMINI_API_KEY` in your `.env` file or environment secrets:
+   Set `GEMINI_API_KEY` in your `.env` file or in **Settings > Secrets**:
    ```env
    GEMINI_API_KEY="your-gemini-api-key"
    ```
@@ -42,4 +41,5 @@ It connects AI tutoring, structured curriculum generation, diagnostic quizzing, 
    ```bash
    npm run lint
    npm run build
+   npm start
    ```

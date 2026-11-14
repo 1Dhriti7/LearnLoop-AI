@@ -10,11 +10,11 @@ import {
   Plus,
   Target,
 } from "lucide-react";
+import { generateLearningPath } from "../services/geminiClient";
 import type {
   LearningPath,
   NavigationPrefill,
   PageId,
-  PathLesson,
 } from "../types/learning";
 
 interface LearningPathViewProps {
@@ -87,55 +87,11 @@ export const LearningPathView: React.FC<LearningPathViewProps> = ({
     setError(null);
 
     try {
-      const response = await fetch("/api/learning-path/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject, topic, goal }),
+      const created = await generateLearningPath({
+        subject,
+        topic,
+        goal,
       });
-
-      const data = (await response.json()) as {
-        pathTitle?: string;
-        overview?: string;
-        stages?: {
-          beginner: Omit<PathLesson, "id" | "completed">[];
-          intermediate: Omit<PathLesson, "id" | "completed">[];
-          advanced: Omit<PathLesson, "id" | "completed">[];
-        };
-        error?: string;
-      };
-
-      if (!response.ok || !data.stages) {
-        throw new Error(
-          data.error || "Unable to generate learning path. Please try again."
-        );
-      }
-
-      const timestamp = Date.now();
-      const mapStage = (
-        list: Omit<PathLesson, "id" | "completed">[] | undefined,
-        prefix: string
-      ): PathLesson[] =>
-        (list || []).map((lesson, idx) => ({
-          ...lesson,
-          id: `${prefix}-${timestamp}-${idx}`,
-          completed: false,
-        }));
-
-      const created: LearningPath = {
-        id: `path-${timestamp}`,
-        subject: subject.trim(),
-        topic: topic.trim(),
-        goal: goal.trim(),
-        pathTitle: data.pathTitle || `${topic.trim()} Roadmap`,
-        overview: data.overview || "",
-        createdAt: new Date().toISOString().slice(0, 10),
-        stages: {
-          beginner: mapStage(data.stages.beginner, "beg"),
-          intermediate: mapStage(data.stages.intermediate, "int"),
-          advanced: mapStage(data.stages.advanced, "adv"),
-        },
-      };
-
       onAddPath(created);
     } catch (err) {
       setError(

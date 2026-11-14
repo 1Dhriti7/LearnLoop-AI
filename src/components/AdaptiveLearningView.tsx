@@ -9,6 +9,7 @@ import {
   RefreshCw,
   Target,
 } from "lucide-react";
+import { generateAdaptiveAnalysis } from "../services/geminiClient";
 import type {
   AdaptiveInsight,
   Course,
@@ -43,37 +44,12 @@ export const AdaptiveLearningView: React.FC<AdaptiveLearningViewProps> = ({
     setError(null);
 
     try {
-      const response = await fetch("/api/adaptive/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          quizHistory,
-          courses: courses.map((c) => ({
-            title: c.title,
-            subject: c.subject,
-            progress: c.progress,
-            masteryLevel: c.masteryLevel,
-          })),
-          weakTopics: weakTopics.map((w) => `${w.subject}: ${w.topic}`),
-        }),
+      const updated = await generateAdaptiveAnalysis({
+        quizHistory,
+        courses,
+        weakTopics: weakTopics.map((w) => `${w.subject}: ${w.topic}`),
       });
-
-      const data = (await response.json()) as Partial<AdaptiveInsight> & {
-        error?: string;
-      };
-
-      if (!response.ok || !data.diagnosticSummary || !data.recommendedLessons) {
-        throw new Error(
-          data.error || "Unable to refresh adaptive analysis right now."
-        );
-      }
-
-      onUpdateInsight({
-        generatedAt: new Date().toISOString().slice(0, 10),
-        diagnosticSummary: data.diagnosticSummary,
-        weakAreaDiagnostics: data.weakAreaDiagnostics || [],
-        recommendedLessons: data.recommendedLessons,
-      });
+      onUpdateInsight(updated);
     } catch (err) {
       setError(
         err instanceof Error
