@@ -1,0 +1,6 @@
+{
+  "name": "LearnLoop AI",
+  "description": "Personalized AI-powered education platform with Gemini tutoring, adaptive learning paths, interactive quizzes, study planning, and progress analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
